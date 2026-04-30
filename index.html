@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registro de Equipos Académicos</title>
+    <title>Registro de Equipos Académicos - Persistente</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 30px; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 25px; max-width: 1200px; margin: auto; }
@@ -12,15 +12,15 @@
         td { border: 1px solid #dee2e6; padding: 10px; text-align: center; }
         input { width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .required { border-left: 4px solid #e74c3c; }
-        .btn-add { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-right: 10px; }
+        .btn-add { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-save { background: #f39c12; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-list { background: #34495e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-add:hover { background: #219150; }
+        .btn-save:hover { background: #d68910; }
         
-        /* Estilos de la lista de resultados */
         #seccionLista { margin-top: 30px; display: none; border-top: 2px solid #1a5276; padding-top: 20px; }
         .grupo-item { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #1a5276; }
-        .grupo-item h3 { margin: 0 0 5px 0; color: #1a5276; font-size: 16px; }
-        .grupo-item p { margin: 2px 0; font-size: 14px; color: #333; }
+        .grupo-item h3 { margin: 0; color: #1a5276; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -29,12 +29,13 @@
     <div class="header-flex">
         <h2>Gestión de Equipos Académicos</h2>
         <div>
-            <button class="btn-add" onclick="agregarGrupo()">+ Agregar Nuevo Grupo</button>
-            <button class="btn-list" onclick="listarGruposConformados()">📄 Listar Grupos</button>
+            <button class="btn-add" onclick="agregarGrupo()">+ Nuevo Grupo</button>
+            <button class="btn-save" onclick="guardarProgreso()">💾 Guardar</button>
+            <button class="btn-list" onclick="listarGruposConformados()">📄 Listar Finalizados</button>
         </div>
     </div>
     
-    <p style="color: #666;">Mínimo 3, máximo 5 integrantes. <b>No se permiten nombres duplicados.</b></p>
+    <p style="color: #666;">Los datos se guardan en tu navegador. <b>No se permiten duplicados.</b></p>
 
     <table id="tablaGrupos">
         <thead>
@@ -48,12 +49,11 @@
                 <th>Integrante 5</th>
             </tr>
         </thead>
-        <tbody>
-            </tbody>
+        <tbody id="cuerpoTabla"></tbody>
     </table>
 
     <div id="seccionLista">
-        <h2>Resumen de Grupos Conformados</h2>
+        <h2>Resumen de Grupos Guardados</h2>
         <div id="contenedorLista"></div>
     </div>
 </div>
@@ -86,20 +86,20 @@
 <script>
     let contadorGrupos = 0;
 
-    function agregarGrupo() {
+    function agregarGrupo(datos = null) {
         contadorGrupos++;
-        const tbody = document.querySelector("#tablaGrupos tbody");
+        const tbody = document.getElementById("cuerpoTabla");
         const fila = document.createElement("tr");
         fila.className = "fila-grupo";
         
         fila.innerHTML = `
             <td style="font-weight:bold">${contadorGrupos}</td>
-            <td><input type="text" class="tema-input" placeholder="Tema..."></td>
-            <td><input type="text" list="estudiantes" class="required member-input" onchange="validarDuplicado(this)"></td>
-            <td><input type="text" list="estudiantes" class="required member-input" onchange="validarDuplicado(this)"></td>
-            <td><input type="text" list="estudiantes" class="required member-input" onchange="validarDuplicado(this)"></td>
-            <td><input type="text" list="estudiantes" class="member-input" onchange="validarDuplicado(this)"></td>
-            <td><input type="text" list="estudiantes" class="member-input" onchange="validarDuplicado(this)"></td>
+            <td><input type="text" class="tema-input" value="${datos ? datos.tema : ''}" placeholder="Tema..."></td>
+            <td><input type="text" list="estudiantes" value="${datos ? datos.m1 : ''}" class="required member-input" onchange="validarDuplicado(this)"></td>
+            <td><input type="text" list="estudiantes" value="${datos ? datos.m2 : ''}" class="required member-input" onchange="validarDuplicado(this)"></td>
+            <td><input type="text" list="estudiantes" value="${datos ? datos.m3 : ''}" class="required member-input" onchange="validarDuplicado(this)"></td>
+            <td><input type="text" list="estudiantes" value="${datos ? datos.m4 : ''}" class="member-input" onchange="validarDuplicado(this)"></td>
+            <td><input type="text" list="estudiantes" value="${datos ? datos.m5 : ''}" class="member-input" onchange="validarDuplicado(this)"></td>
         `;
         tbody.appendChild(fila);
     }
@@ -121,42 +121,60 @@
         }
     }
 
-    function listarGruposConformados() {
+    function guardarProgreso() {
         const filas = document.querySelectorAll(".fila-grupo");
+        const datosAGuardar = [];
+
+        filas.forEach(fila => {
+            const inputs = fila.querySelectorAll("input");
+            datosAGuardar.push({
+                tema: inputs[0].value,
+                m1: inputs[1].value,
+                m2: inputs[2].value,
+                m3: inputs[3].value,
+                m4: inputs[4].value,
+                m5: inputs[5].value
+            });
+        });
+
+        localStorage.setItem("registroGrupos", JSON.stringify(datosAGuardar));
+        alert("¡Progreso guardado exitosamente!");
+    }
+
+    function listarGruposConformados() {
+        const datos = JSON.parse(localStorage.getItem("registroGrupos"));
+        if (!datos) {
+            alert("No hay datos guardados. Por favor, pulsa 'Guardar' primero.");
+            return;
+        }
+
         const contenedor = document.getElementById("contenedorLista");
         const seccion = document.getElementById("seccionLista");
+        contenedor.innerHTML = "";
         
-        contenedor.innerHTML = ""; // Limpiar lista anterior
-        let gruposValidos = 0;
-
-        filas.forEach((fila, index) => {
-            const tema = fila.querySelector(".tema-input").value;
-            const integrantes = Array.from(fila.querySelectorAll(".member-input"))
-                                    .map(i => i.value.trim())
-                                    .filter(nombre => nombre !== "");
-
-            // Solo listar si tiene al menos el mínimo de 3 integrantes
+        let validos = 0;
+        datos.forEach((grupo, index) => {
+            const integrantes = [grupo.m1, grupo.m2, grupo.m3, grupo.m4, grupo.m5].filter(n => n !== "");
             if (integrantes.length >= 3) {
-                gruposValidos++;
+                validos++;
                 const div = document.createElement("div");
                 div.className = "grupo-item";
-                div.innerHTML = `
-                    <h3>Grupo ${index + 1}: ${tema || '(Sin Tema)'}</h3>
-                    <p><b>Integrantes (${integrantes.length}):</b> ${integrantes.join(", ")}</p>
-                `;
+                div.innerHTML = `<h3>Grupo ${index+1}: ${grupo.tema || 'Sin Tema'}</h3><p>${integrantes.join(", ")}</p>`;
                 contenedor.appendChild(div);
             }
         });
 
-        if (gruposValidos > 0) {
-            seccion.style.display = "block";
-            window.scrollTo(0, document.body.scrollHeight);
-        } else {
-            alert("No hay grupos completos (mínimo 3 integrantes) para listar.");
-        }
+        seccion.style.display = validos > 0 ? "block" : "none";
+        if(validos > 0) window.scrollTo(0, document.body.scrollHeight);
     }
 
-    for(let i=0; i<6; i++) { agregarGrupo(); }
+    // Cargar datos al iniciar o crear los 6 grupos por defecto
+    const guardados = JSON.parse(localStorage.getItem("registroGrupos"));
+    if (guardados && guardados.length > 0) {
+        guardados.forEach(g => agregarGrupo(g));
+    } else {
+        for(let i=0; i<6; i++) { agregarGrupo(); }
+    }
 </script>
 
 </body>
