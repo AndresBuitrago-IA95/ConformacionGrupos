@@ -2,20 +2,25 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registro de Grupos Inteligente</title>
+    <title>Registro de Equipos Académicos</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 30px; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 25px; max-width: 1200px; margin: auto; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 20px; }
         th { background-color: #1a5276; color: white; padding: 12px; font-size: 14px; }
         td { border: 1px solid #dee2e6; padding: 10px; text-align: center; }
-        input { width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; transition: 0.3s; }
-        input:focus { border-color: #1a5276; outline: none; background: #f0f7ff; }
+        input { width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .required { border-left: 4px solid #e74c3c; }
-        .btn-add { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-add { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-right: 10px; }
+        .btn-list { background: #34495e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-add:hover { background: #219150; }
-        .warning { color: #e74c3c; font-size: 11px; display: none; margin-top: 4px; }
+        
+        /* Estilos de la lista de resultados */
+        #seccionLista { margin-top: 30px; display: none; border-top: 2px solid #1a5276; padding-top: 20px; }
+        .grupo-item { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #1a5276; }
+        .grupo-item h3 { margin: 0 0 5px 0; color: #1a5276; font-size: 16px; }
+        .grupo-item p { margin: 2px 0; font-size: 14px; color: #333; }
     </style>
 </head>
 <body>
@@ -23,7 +28,10 @@
 <div class="card">
     <div class="header-flex">
         <h2>Gestión de Equipos Académicos</h2>
-        <button class="btn-add" onclick="agregarGrupo()">+ Agregar Nuevo Grupo</button>
+        <div>
+            <button class="btn-add" onclick="agregarGrupo()">+ Agregar Nuevo Grupo</button>
+            <button class="btn-list" onclick="listarGruposConformados()">📄 Listar Grupos</button>
+        </div>
     </div>
     
     <p style="color: #666;">Mínimo 3, máximo 5 integrantes. <b>No se permiten nombres duplicados.</b></p>
@@ -43,20 +51,36 @@
         <tbody>
             </tbody>
     </table>
+
+    <div id="seccionLista">
+        <h2>Resumen de Grupos Conformados</h2>
+        <div id="contenedorLista"></div>
+    </div>
 </div>
 
 <datalist id="estudiantes">
-    <option value="Elizabeth Del Carmen Arboleda Vasquez">
-    <option value="Gloria Mercedes Bravo Múnera">
-    <option value="María Elena Castañeda Toro">
-    <option value="Carlos Duarte Lopez">
-    <option value="Juan Fernando Escobar Cuervo">
-    <option value="Beatriz Eugenia Giraldo Marin">
-    <option value="Blanca Cecilia Gomez Alvarez">
-    <option value="Elsa Ruth Hernández">
-    <option value="Hernando Hernández Ramírez">
-    <option value="Olga Luz Lopera Eusse">
-    <option value="Gloria Parra Sánchez">
+    <option value="Jhon Andres Aguirre Chirinos">
+    <option value="Diego Alexander Arias Diaz">
+    <option value="Maria Paulina Ayala Villegas">
+    <option value="Edwin Ferney Banquez Carmona">
+    <option value="Jose Daniel Calderin Tenorio">
+    <option value="Leidy Yamile Castañeda Cardona">
+    <option value="Juan Pablo Echavarria Naranjo">
+    <option value="Jhonathan Gallego Gomez">
+    <option value="Camilo Andres Gomez Vasco">
+    <option value="Jhon Dario Molina Vasquez">
+    <option value="Gustavo Adolfo Morales Restrepo">
+    <option value="Sebastian Orozco Mendez">
+    <option value="Luis Fernando Osuna Florez">
+    <option value="Susana Perez Tamayo">
+    <option value="Sandra Patricia Ramirez Betancur">
+    <option value="Juan Camilo Robledo Gomez">
+    <option value="Tomás Roquemen Tangarife">
+    <option value="Leandra Magally Sánchez Herrera">
+    <option value="Jurith Marcela Tapia Diaz">
+    <option value="Juan De Dios Vasquez Velez">
+    <option value="Juan David Velez Montoya">
+    <option value="Jhon William Zapata Gomez">
 </datalist>
 
 <script>
@@ -66,10 +90,11 @@
         contadorGrupos++;
         const tbody = document.querySelector("#tablaGrupos tbody");
         const fila = document.createElement("tr");
+        fila.className = "fila-grupo";
         
         fila.innerHTML = `
             <td style="font-weight:bold">${contadorGrupos}</td>
-            <td><input type="text" placeholder="Tema..."></td>
+            <td><input type="text" class="tema-input" placeholder="Tema..."></td>
             <td><input type="text" list="estudiantes" class="required member-input" onchange="validarDuplicado(this)"></td>
             <td><input type="text" list="estudiantes" class="required member-input" onchange="validarDuplicado(this)"></td>
             <td><input type="text" list="estudiantes" class="required member-input" onchange="validarDuplicado(this)"></td>
@@ -82,24 +107,55 @@
     function validarDuplicado(inputActual) {
         const todosLosInputs = document.querySelectorAll(".member-input");
         const valorActual = inputActual.value.trim().toLowerCase();
-
         if (valorActual === "") return;
 
         let coincidencias = 0;
         todosLosInputs.forEach(input => {
-            if (input.value.trim().toLowerCase() === valorActual) {
-                coincidencias++;
-            }
+            if (input.value.trim().toLowerCase() === valorActual) coincidencias++;
         });
 
         if (coincidencias > 1) {
-            alert("¡Error! El integrante '" + inputActual.value + "' ya ha sido asignado a un grupo.");
+            alert("¡Error! El integrante '" + inputActual.value + "' ya está en un grupo.");
             inputActual.value = "";
             inputActual.focus();
         }
     }
 
-    // Inicializar con los 6 grupos que pediste originalmente
+    function listarGruposConformados() {
+        const filas = document.querySelectorAll(".fila-grupo");
+        const contenedor = document.getElementById("contenedorLista");
+        const seccion = document.getElementById("seccionLista");
+        
+        contenedor.innerHTML = ""; // Limpiar lista anterior
+        let gruposValidos = 0;
+
+        filas.forEach((fila, index) => {
+            const tema = fila.querySelector(".tema-input").value;
+            const integrantes = Array.from(fila.querySelectorAll(".member-input"))
+                                    .map(i => i.value.trim())
+                                    .filter(nombre => nombre !== "");
+
+            // Solo listar si tiene al menos el mínimo de 3 integrantes
+            if (integrantes.length >= 3) {
+                gruposValidos++;
+                const div = document.createElement("div");
+                div.className = "grupo-item";
+                div.innerHTML = `
+                    <h3>Grupo ${index + 1}: ${tema || '(Sin Tema)'}</h3>
+                    <p><b>Integrantes (${integrantes.length}):</b> ${integrantes.join(", ")}</p>
+                `;
+                contenedor.appendChild(div);
+            }
+        });
+
+        if (gruposValidos > 0) {
+            seccion.style.display = "block";
+            window.scrollTo(0, document.body.scrollHeight);
+        } else {
+            alert("No hay grupos completos (mínimo 3 integrantes) para listar.");
+        }
+    }
+
     for(let i=0; i<6; i++) { agregarGrupo(); }
 </script>
 
