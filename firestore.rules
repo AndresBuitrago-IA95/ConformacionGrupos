@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(data) {
+      return isSignedIn() && data.createdBy == request.auth.uid;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Sessions collection
+    match /sessions/{sessionId} {
+      allow list, get: if isSignedIn();
+      
+      allow create: if isSignedIn() 
+        && isValidId(sessionId)
+        && isValidGroupSession(incoming())
+        && incoming().createdBy == request.auth.uid
+        && incoming().createdAt == request.time;
+
+      allow delete, update: if isSignedIn() && isOwner(existing());
+    }
+
+    function isValidGroupSession(data) {
+      return data.keys().hasAll(['createdAt', 'groups', 'createdBy'])
+        && (data.keys().size() == 3 || (data.keys().size() == 4 && data.keys().hasAll(['title'])))
+        && (data.get('title', '') is string && data.get('title', '').size() <= 200)
+        && data.createdAt is timestamp
+        && data.groups is list
+        && data.groups.size() <= 100
+        && data.createdBy is string
+        && data.createdBy.size() <= 128;
+    }
+  }
+}

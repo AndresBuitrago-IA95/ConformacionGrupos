@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "GroupSession": {
+      "title": "Group Session",
+      "description": "A record of randomized groups created in a single session.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "An optional title for the session."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the groups were registered."
+        },
+        "groups": {
+          "type": "array",
+          "description": "List of groups formed.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "topic": { "type": "string" },
+              "members": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "User ID who created this session."
+        }
+      },
+      "required": ["createdAt", "groups", "createdBy"]
+    }
+  },
+  "firestore": {
+    "/sessions/{sessionId}": {
+      "schema": "GroupSession",
+      "description": "Collection of group sessions."
+    }
+  }
+}

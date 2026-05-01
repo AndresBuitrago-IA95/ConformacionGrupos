@@ -1,0 +1,6 @@
+{
+  "name": "Gestor de Grupos Académicos",
+  "description": "Herramienta para la conformación aleatoria de grupos con persistencia de registro y listado histórico.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
