@@ -26,7 +26,8 @@ import {
   ClipboardList,
   Loader2,
   Calendar,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -135,6 +136,16 @@ export default function App() {
       topic: '',
       members: ['', '', '', '', ''] // 5 slots
     }]);
+  };
+
+  const removeGroup = (index: number) => {
+    const newGroups = currentGroups.filter((_, i) => i !== index);
+    // Re-index group names
+    const reindexedGroups = newGroups.map((g, i) => ({
+      ...g,
+      name: `${i + 1}`
+    }));
+    setCurrentGroups(reindexedGroups);
   };
 
   const updateGroupTopic = (index: number, topic: string) => {
@@ -269,6 +280,7 @@ export default function App() {
                     <th className="p-4 text-left">Integrante 3</th>
                     <th className="p-4 text-left">Integrante 4</th>
                     <th className="p-4 text-left">Integrante 5</th>
+                    <th className="p-4 w-12"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -315,6 +327,15 @@ export default function App() {
                             </div>
                           </td>
                         ))}
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => removeGroup(groupIdx)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Eliminar Grupo"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )}
