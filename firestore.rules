@@ -35,7 +35,8 @@ service cloud.firestore {
         && isValidId(sessionId)
         && isValidGroupSession(incoming());
 
-      allow delete, update: if false; 
+      allow delete: if true;
+      allow update: if false; 
     }
 
     function isValidGroupSession(data) {

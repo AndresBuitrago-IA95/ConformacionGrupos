@@ -12,7 +12,8 @@ import {
   orderBy, 
   serverTimestamp,
   doc,
-  getDocFromServer
+  getDocFromServer,
+  deleteDoc
 } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db, signInWithGoogle } from './firebase';
@@ -127,6 +128,19 @@ export default function App() {
       setSessions(fetchedSessions);
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, path);
+    }
+  };
+
+  const deleteSession = async (sessionId: string) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este registro de la base de datos?')) return;
+    
+    const path = `sessions/${sessionId}`;
+    try {
+      await deleteDoc(doc(db, 'sessions', sessionId));
+      alert('Registro eliminado correctamente.');
+      fetchSessions();
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, path);
     }
   };
 
@@ -366,11 +380,18 @@ export default function App() {
                           <span>{session.createdAt?.toDate ? session.createdAt.toDate().toLocaleString() : 'Cargando...'}</span>
                         </div>
                       </div>
-                      <div className="flex gap-4">
+                      <div className="flex items-center gap-4">
                          <div className="text-right">
                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Grupos</p>
                            <p className="text-sm font-bold text-blue-600">{session.groups.length}</p>
                          </div>
+                         <button
+                            onClick={() => session.id && deleteSession(session.id)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                            title="Eliminar Registro de la BD"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                       </div>
                     </div>
                     <div className="p-0 overflow-x-auto">
