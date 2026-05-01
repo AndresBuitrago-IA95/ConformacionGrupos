@@ -29,15 +29,13 @@ service cloud.firestore {
 
     // Sessions collection
     match /sessions/{sessionId} {
-      allow list, get: if isSignedIn();
+      allow list, get: if true;
       
-      allow create: if isSignedIn() 
+      allow create: if true
         && isValidId(sessionId)
-        && isValidGroupSession(incoming())
-        && incoming().createdBy == request.auth.uid
-        && incoming().createdAt == request.time;
+        && isValidGroupSession(incoming());
 
-      allow delete, update: if isSignedIn() && isOwner(existing());
+      allow delete, update: if false; 
     }
 
     function isValidGroupSession(data) {
@@ -46,9 +44,7 @@ service cloud.firestore {
         && (data.get('title', '') is string && data.get('title', '').size() <= 200)
         && data.createdAt is timestamp
         && data.groups is list
-        && data.groups.size() <= 100
-        && data.createdBy is string
-        && data.createdBy.size() <= 128;
+        && data.groups.size() <= 100;
     }
   }
 }

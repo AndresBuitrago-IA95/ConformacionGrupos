@@ -88,7 +88,6 @@ interface GroupSession {
 // --- Main App Component ---
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentGroups, setCurrentGroups] = useState<Group[]>([]);
   const [sessions, setSessions] = useState<GroupSession[]>([]);
@@ -96,30 +95,23 @@ export default function App() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    async function testConnection() {
+    async function init() {
       try {
         await getDocFromServer(doc(db, 'test', 'connection'));
-      } catch {
-        // Silently handle connection test
-      }
-    }
-    testConnection();
-
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+      } catch {}
+      await fetchSessions();
       setLoading(false);
-    });
-    return () => unsubscribe();
+    }
+    init();
   }, []);
 
   useEffect(() => {
-    if (user && view === 'history') {
+    if (view === 'history') {
       fetchSessions();
     }
-  }, [user, view]);
+  }, [view]);
 
   const fetchSessions = async () => {
-    if (!user) return;
     const path = 'sessions';
     try {
       const q = query(
@@ -162,7 +154,7 @@ export default function App() {
   };
 
   const saveSession = async () => {
-    if (!user || currentGroups.length === 0) return;
+    if (currentGroups.length === 0) return;
     
     // Filter out groups with no members and no topic
     const validGroups = currentGroups.filter(g => g.topic !== '' || g.members.some(m => m !== ''));
@@ -181,7 +173,7 @@ export default function App() {
           ...g,
           members: g.members.filter(m => m !== '') // Save only selected members
         })),
-        createdBy: user.uid
+        createdBy: 'public'
       };
       await addDoc(collection(db, path), newSession);
       alert('Registro guardado correctamente en la base de datos (Persistente).');
@@ -203,33 +195,6 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 font-sans">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-xl p-8 shadow-xl text-center border border-gray-100"
-        >
-          <div className="w-16 h-16 bg-[#1e4e79] rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Users className="text-white w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Gestión de Equipos</h1>
-          <p className="text-gray-600 mb-8">
-            Accede para registrar y listar tus grupos académicos de forma persistente.
-          </p>
-          <button
-            onClick={signInWithGoogle}
-            className="w-full py-4 bg-[#1e4e79] text-white rounded-lg font-bold hover:bg-[#153a5c] transition-colors flex items-center justify-center gap-2"
-          >
-            <UserIcon size={18} />
-            Continuar con Google
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
   const selectedMembers = getAllSelectedMembers();
 
   return (
@@ -244,17 +209,10 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-6">
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-bold text-gray-700">{user.displayName}</p>
-              <p className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">Docente</p>
+            <div className="text-right">
+              <p className="text-sm font-bold text-gray-700">Acceso Público</p>
+              <p className="text-[10px] text-gray-400 font-mono tracking-widest uppercase text-right">Modo Colaborativo</p>
             </div>
-            <button 
-              onClick={() => auth.signOut()} 
-              className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-gray-400 hover:text-red-500"
-              title="Cerrar Sesión"
-            >
-              <LogOut size={18} />
-            </button>
           </div>
         </div>
       </header>
